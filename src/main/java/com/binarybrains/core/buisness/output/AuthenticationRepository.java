@@ -7,4 +7,6 @@ import java.util.Optional;
 public interface AuthenticationRepository {
     boolean existUserByEmail(String email);
     Optional<User> create(User user);
+    boolean validatePassword(String email, String password);
+
 }

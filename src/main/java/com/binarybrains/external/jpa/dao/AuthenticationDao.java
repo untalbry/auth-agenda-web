@@ -16,6 +16,7 @@ public class AuthenticationDao implements AuthenticationRepository {
     @PersistenceContext
     EntityManager entityManager;
     private static final String QUERY_EXISTS_USER_BY_EMAIL = "SELECT EXISTS(SELECT 1 FROM tac01_usuario WHERE tx_login = :email)";
+    private static final String QUERY_IS_PASSWORD_CORRECT = "SELECT EXISTS(SELECT 1 FROM tac01_usuario WHERE tx_login =:email AND tx_password = :password)";
     private final AuthenticationJpaRepository authenticationJpaRepository;
 
     @Inject
@@ -31,9 +32,15 @@ public class AuthenticationDao implements AuthenticationRepository {
                 .setParameter("email", email)
                 .getSingleResult();
     }
-
     @Override
-    public Optional<User> sigin(User user) {
+    public boolean validatePassword(String email, String password) {
+        return  (Boolean) entityManager.createNativeQuery(QUERY_IS_PASSWORD_CORRECT)
+                .setParameter("email", email)
+                .setParameter("password", password)
+                .getSingleResult();
+    }
+    @Override
+    public Optional<User> create(User user) {
         return Optional.of(authenticationJpaRepository.save(UserJpa.fromEntity(user)).toEntity());
     }
 

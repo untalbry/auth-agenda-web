@@ -24,9 +24,7 @@ public class AuthenticationCtrl {
         this.authenticationService = authenticationService;
     }
     @POST
-    @Consumes(MediaType.APPLICATION_JSON)
-
-    @APIResponse(responseCode = "200", name = "Success", description = "Authentication successful")
+    @APIResponse(responseCode = "200", name = "Success", description = "User register successful")
     @APIResponse(responseCode = "400", name = "Bad request", description = "Error in the request")
     @APIResponse(responseCode = "404", name = "Not found", description = "User not found")
     public Response register(@Valid SigningDto signingDto){
@@ -34,5 +32,14 @@ public class AuthenticationCtrl {
                 .map(Response::ok)
                 .getOrElseGet(errorCode -> Response.status(400).entity(errorCode)).build();
     }
-
+    @POST
+    @Path("/login")
+    @APIResponse(responseCode = "200", name = "Success", description = "Authentication successful")
+    @APIResponse(responseCode = "400", name = "Bad request", description = "Error in the request")
+    @APIResponse(responseCode = "404", name = "Not found", description = "User not found")
+    public Response login(@Valid SigningDto signingDto){
+        return authenticationService.login(signingDto.toEntity())
+                .map(Response::ok)
+                .getOrElseGet(errorCode -> Response.status(400).entity(errorCode)).build();
+    }
 }
