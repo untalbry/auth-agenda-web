@@ -1,7 +1,7 @@
 package com.binarybrains.external.rest.controller;
 
-import com.binarybrains.core.buisness.implementation.AuthenticationBs;
 import com.binarybrains.core.buisness.input.AuthenticationService;
+import com.binarybrains.external.rest.dto.RegisterDto;
 import com.binarybrains.external.rest.dto.SigningDto;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
@@ -26,9 +26,8 @@ public class AuthenticationCtrl {
     @POST
     @APIResponse(responseCode = "200", name = "Success", description = "User register successful")
     @APIResponse(responseCode = "400", name = "Bad request", description = "Error in the request")
-    @APIResponse(responseCode = "404", name = "Not found", description = "User not found")
-    public Response register(@Valid SigningDto signingDto){
-        return authenticationService.register(signingDto.toEntity())
+    public Response register(@Valid RegisterDto registerDto){
+        return authenticationService.register(registerDto.toEntity())
                 .map(Response::ok)
                 .getOrElseGet(errorCode -> Response.status(400).entity(errorCode)).build();
     }
@@ -39,7 +38,7 @@ public class AuthenticationCtrl {
     @APIResponse(responseCode = "404", name = "Not found", description = "User not found")
     public Response login(@Valid SigningDto signingDto){
         return authenticationService.login(signingDto.toEntity())
-                .map(Response::ok)
-                .getOrElseGet(errorCode -> Response.status(400).entity(errorCode)).build();
+                .map(userAuth -> Response.status(200).entity(userAuth).build())
+                .getOrElseGet(errorCode -> Response.status(400).entity(errorCode).build());
     }
 }

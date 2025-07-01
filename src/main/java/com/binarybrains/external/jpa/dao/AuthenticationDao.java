@@ -9,13 +9,14 @@ import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 
+import java.util.List;
 import java.util.Optional;
 
 @ApplicationScoped
 public class AuthenticationDao implements AuthenticationRepository {
     @PersistenceContext
     EntityManager entityManager;
-    private static final String QUERY_EXISTS_USER_BY_EMAIL = "SELECT EXISTS(SELECT 1 FROM tac01_usuario WHERE tx_login = :email)";
+    private static final String QUERY_EXISTS_USER_BY_EMAIL = "SELECT id_usuario, tx_nombre, tx_primer_apellido, tx_segundo_apellido FROM tac01_usuario WHERE tx_login = :email";
     private static final String QUERY_IS_PASSWORD_CORRECT = "SELECT EXISTS(SELECT 1 FROM tac01_usuario WHERE tx_login =:email AND tx_password = :password)";
     private final AuthenticationJpaRepository authenticationJpaRepository;
 
@@ -26,11 +27,25 @@ public class AuthenticationDao implements AuthenticationRepository {
 
 
     @Override
-    public boolean existUserByEmail(String email) {
-        return (Boolean) entityManager
+    @SuppressWarnings("unchecked")
+    public Optional<List<User>> getUserByEmail(String email) {
+        List<User> users = entityManager
                 .createNativeQuery(QUERY_EXISTS_USER_BY_EMAIL)
                 .setParameter("email", email)
-                .getSingleResult();
+                .getResultList()
+                .stream()
+                .map(row -> {
+                    Object[] r = (Object[]) row;
+                    return UserJpa.builder()
+                            .id((Integer) r[0])
+                            .name((String) r[1])
+                            .lastName((String) r[2])
+                            .secondLastName((String) r[3])
+                            .build()
+                            .toEntity();
+                })
+                .toList();
+        return Optional.of(users);
     }
     @Override
     public boolean validatePassword(String email, String password) {
